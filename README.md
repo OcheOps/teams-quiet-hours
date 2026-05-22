@@ -268,7 +268,7 @@ V1 restraint:
 
 - Do not over-engineer the first stable version.
 - The most valuable V1 is install, setup wizard, schedule, Teams notification blocking, optional Teams app closing, tray status, and temporary override.
-- Firewall rules, calendar integrations, browser-profile introspection, and Teams API automation should stay clearly marked as advanced/future work until they are safe and polished.
+- Advanced features should stay clearly marked as future work until they are safe, polished, and easy to understand.
 
 ## Development
 
