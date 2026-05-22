@@ -16,7 +16,7 @@ import (
 	"github.com/OcheOps/teams-quiet-hours/internal/platform"
 )
 
-var version = "0.4.0"
+var version = "0.4.2"
 
 func usage() {
 	fmt.Fprintf(os.Stderr, `teams-quiet-hours - quiet Microsoft Teams browser notifications outside work hours
@@ -272,6 +272,22 @@ func prompt(reader *bufio.Reader, question string, fallback string) string {
 	return answer
 }
 
+func promptTime(reader *bufio.Reader, question string, fallback string) string {
+	for {
+		answer := prompt(reader, question, fallback)
+		cfg := config.Default()
+		cfg.Start = answer
+		if question == "What time should Teams stop notifying you?" {
+			cfg.Start = config.DefaultStart
+			cfg.End = answer
+		}
+		if err := config.Validate(cfg); err == nil {
+			return answer
+		}
+		fmt.Println("Please use 24-hour HH:MM format, for example 09:00 or 17:00.")
+	}
+}
+
 func promptBool(reader *bufio.Reader, question string, fallback bool) bool {
 	defaultText := "n"
 	if fallback {
@@ -298,8 +314,8 @@ func runSetup(rt platform.Runtime, ef enforcer.Enforcer, current config.Config, 
 	fmt.Println()
 
 	cfg := current
-	cfg.Start = prompt(reader, "What time should Teams start notifying you?", cfg.Start)
-	cfg.End = prompt(reader, "What time should Teams stop notifying you?", cfg.End)
+	cfg.Start = promptTime(reader, "What time should Teams start notifying you?", cfg.Start)
+	cfg.End = promptTime(reader, "What time should Teams stop notifying you?", cfg.End)
 	if promptBool(reader, "Should weekends be blocked?", true) {
 		cfg.Weekdays = "mon-fri"
 	} else {

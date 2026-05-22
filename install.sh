@@ -77,9 +77,17 @@ fi
 echo
 echo "Starting guided setup. This needs Administrator/root access because browser policies and schedulers are system settings."
 if [ "$(id -u)" -eq 0 ]; then
-  "${INSTALL_DIR}/${BIN_NAME}" setup
+  if [ -r /dev/tty ]; then
+    "${INSTALL_DIR}/${BIN_NAME}" setup < /dev/tty
+  else
+    "${INSTALL_DIR}/${BIN_NAME}" setup
+  fi
 else
-  sudo "${INSTALL_DIR}/${BIN_NAME}" setup
+  if [ -r /dev/tty ]; then
+    sudo "${INSTALL_DIR}/${BIN_NAME}" setup < /dev/tty
+  else
+    sudo "${INSTALL_DIR}/${BIN_NAME}" setup
+  fi
 fi
 
 echo
