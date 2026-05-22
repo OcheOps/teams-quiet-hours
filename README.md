@@ -231,6 +231,45 @@ Planned later:
 - macOS `.pkg` installer
 - Windows MSI or winget manifest
 
+## Product Backlog
+
+This project is solving a real work-boundary problem: many people do not hate work itself, they hate the inability to leave work. Future work should keep that human framing: work boundaries without muting your whole machine.
+
+Near-term polish:
+
+- Temporary override: allow Teams for `15m`, `30m`, `1h`, or until tomorrow.
+- Tray icon or small GUI with clear state: Teams allowed, quiet hours active, paused.
+- One-click actions: pause 1 hour, allow until tomorrow, open settings.
+- Smarter setup: detect installed browsers, Teams desktop app, timezone, and likely browser-only vs desktop-app usage.
+- `teams-quiet-hours explain`: show exactly what policies, schedulers, firewall rules, hosts entries, and process controls exist.
+
+Focus and availability ideas:
+
+- Presence/status automation: set Teams to Offline, Away, or Do Not Disturb outside work hours, then restore previous status during work hours.
+- Meeting exceptions: allow scheduled meeting reminders, calls from favorites, or calendar-based temporary allow windows.
+- Deep work modes: silence Teams when fullscreen apps, screen sharing, OBS, Zoom, or coding workflows are active.
+- Multiple work profiles: separate schedules for work laptop, personal machine, or different browser profiles.
+- Browser profile targeting: block Teams only in a specific Chrome/Edge profile such as Work, Company, or Corp.
+
+Longer-term platform ideas:
+
+- Calendar integration with Outlook or Google Calendar.
+- Homebrew tap, RPM package, AUR package, MSI, winget, and optional package repositories.
+- Enterprise/team mode for healthy-boundary policies, labor-law compliance, timezone-aware schedules, and managed exceptions.
+
+Branding direction:
+
+- Keep the tone calm and human, not hostile to work.
+- Avoid framing the tool as a blocker, killer, or anti-work hack.
+- Strong positioning: "Work boundaries without muting your whole machine."
+- Possible future names or related product language: AfterHours, QuietTeams, ClockOut, WorkBoundary, TeamSilence, OfficeHours, Unping, PeaceMode.
+
+V1 restraint:
+
+- Do not over-engineer the first stable version.
+- The most valuable V1 is install, setup wizard, schedule, Teams notification blocking, optional Teams app closing, tray status, and temporary override.
+- Firewall rules, calendar integrations, browser-profile introspection, and Teams API automation should stay clearly marked as advanced/future work until they are safe and polished.
+
 ## Development
 
 ```sh
