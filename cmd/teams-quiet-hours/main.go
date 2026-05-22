@@ -16,7 +16,7 @@ import (
 	"github.com/OcheOps/teams-quiet-hours/internal/platform"
 )
 
-var version = "0.4.2"
+var version = "0.4.3"
 
 func usage() {
 	fmt.Fprintf(os.Stderr, `teams-quiet-hours - quiet Microsoft Teams browser notifications outside work hours
@@ -321,9 +321,20 @@ func runSetup(rt platform.Runtime, ef enforcer.Enforcer, current config.Config, 
 	} else {
 		cfg.Weekdays = "sun,mon,tue,wed,thu,fri,sat"
 	}
+	fmt.Println()
+	fmt.Println("Choose how strict quiet hours should be:")
+	fmt.Println("  soft    Mute Teams browser notifications only. Teams keeps running.")
+	fmt.Println("  hard    Mute notifications and close the Teams desktop app after hours.")
+	fmt.Println("  nuclear Close Teams and optionally add extra network blocking. Use carefully.")
 	cfg.Mode = promptChoice(reader, "Choose mode: soft, hard, or nuclear", cfg.Mode, map[string]string{
 		"soft": "soft", "hard": "hard", "nuclear": "nuclear",
 	})
+	fmt.Println()
+	fmt.Println("Choose which browser should get Teams notification rules:")
+	fmt.Println("  chrome    Google Chrome")
+	fmt.Println("  edge      Microsoft Edge")
+	fmt.Println("  chromium  Chromium")
+	fmt.Println("  all       Apply rules to all supported browsers")
 	cfg.Browser = promptChoice(reader, "Which browser do you use: chrome, edge, chromium, or all", cfg.Browser, map[string]string{
 		"chrome": "chrome", "edge": "edge", "chromium": "chromium", "all": "all",
 	})
