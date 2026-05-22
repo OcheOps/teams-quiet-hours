@@ -1,0 +1,43 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22.x"
+
+      - name: Test
+        run: go test ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Build release binaries
+        run: VERSION=${GITHUB_REF_NAME#v} ./scripts/build.sh
+
+      - name: Build deb packages
+        run: VERSION=${GITHUB_REF_NAME#v} ./packaging/deb/build-deb.sh
+
+      - name: Add install scripts to assets
+        run: cp install.sh install.ps1 dist/
+
+      - name: Generate checksums
+        run: ./scripts/checksums.sh
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*

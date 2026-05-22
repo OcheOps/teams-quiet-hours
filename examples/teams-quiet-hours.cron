@@ -1,7 +1,0 @@
-SHELL=/bin/sh
-PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-CRON_TZ=Africa/Lagos
-
-0 9 * * 1-5 root /usr/local/bin/teams-quiet-hours allow --browser chrome
-0 17 * * 1-5 root /usr/local/bin/teams-quiet-hours block --browser chrome
-0 0 * * 6,0 root /usr/local/bin/teams-quiet-hours block --browser chrome

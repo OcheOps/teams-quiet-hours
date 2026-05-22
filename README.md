@@ -1,162 +1,247 @@
 # teams-quiet-hours
 
-`teams-quiet-hours` is a small Linux CLI utility that blocks Microsoft Teams web notifications in Google Chrome outside configured work hours, without muting all browser or system notifications.
+Install once, choose your work hours, and Teams stops disturbing you outside them.
 
-It works by managing one Chrome Enterprise policy file:
+`teams-quiet-hours` helps people set real work boundaries by silencing or blocking Microsoft Teams outside working hours without muting their whole machine.
 
-```text
-/etc/opt/chrome/policies/managed/teams-quiet-hours.json
-```
+Default schedule:
 
-When quiet hours are active, the tool writes the `NotificationsBlockedForUrls` policy for Teams URLs. When notifications should be allowed, it removes only that one managed policy file.
-
-## Default Schedule
-
-- Allow Teams notifications Monday-Friday, 09:00-17:00
-- Block Teams notifications before 09:00
-- Block Teams notifications after 17:00
-- Block Teams notifications on Saturday and Sunday
+- Allow Teams Monday-Friday, 09:00-17:00
+- Block before 09:00
+- Block after 17:00
+- Block all weekend
 
 ## Install
 
-From a checkout:
+Users do not need Go installed and do not need to clone this repository.
+
+Linux/macOS:
 
 ```sh
-sudo ./bin/teams-quiet-hours install --timezone Africa/Lagos
+curl -fsSL https://github.com/OcheOps/teams-quiet-hours/releases/latest/download/install.sh | sh
 ```
 
-This installs:
+Windows PowerShell as Administrator:
 
-- `/usr/local/bin/teams-quiet-hours`
-- `/etc/cron.d/teams-quiet-hours`
-- `/etc/teams-quiet-hours/config`
+```powershell
+iwr https://github.com/OcheOps/teams-quiet-hours/releases/latest/download/install.ps1 -UseB | iex
+```
 
-The cron file runs:
-
-- `allow` at 09:00 Monday-Friday
-- `block` at 17:00 Monday-Friday
-- `block` at 00:00 Saturday and Sunday
-
-## Usage
+The installer downloads the correct prebuilt binary for your OS and CPU, verifies the release checksum when possible, installs the binary, then starts:
 
 ```sh
-teams-quiet-hours install
-teams-quiet-hours uninstall
-teams-quiet-hours block
-teams-quiet-hours allow
+teams-quiet-hours setup
+```
+
+## Guided Setup
+
+`setup` asks plain questions:
+
+- What time should Teams start notifying you?
+- What time should Teams stop notifying you?
+- Should weekends be blocked?
+- Which mode do you want?
+- Which browser do you use?
+- Should Teams reopen automatically during work hours?
+
+Run setup again anytime:
+
+```sh
+sudo teams-quiet-hours setup
+```
+
+Windows users should run setup from an Administrator PowerShell window.
+
+## Modes
+
+### Soft
+
+Default and safest.
+
+- Blocks Teams web notifications through Chrome/Chromium/Edge enterprise browser policies.
+- Leaves Teams desktop apps running.
+- Does not close tabs.
+- Does not block network access.
+
+Soft mode blocks notifications only. It does not reliably stop Teams desktop calls/ringing.
+
+### Hard
+
+Opt-in.
+
+- Blocks Teams web notifications.
+- Closes/kills Teams desktop processes outside work hours.
+- Does not block network access unless explicitly enabled.
+
+Hard mode closes Teams outside work hours.
+
+### Nuclear
+
+Opt-in for stronger boundaries.
+
+- Blocks Teams web notifications.
+- Closes/kills Teams desktop processes.
+- Can add experimental Teams network blocking when enabled.
+- Installs repeated enforcement every few minutes.
+
+Nuclear mode may interfere with Microsoft 365 workflows and should be used carefully.
+
+## Everyday Commands
+
+```sh
 teams-quiet-hours status
-teams-quiet-hours config
-```
-
-Commands that write under `/etc` or `/usr/local/bin` require root:
-
-```sh
-sudo teams-quiet-hours block
-sudo teams-quiet-hours allow
-```
-
-Check what would be changed without writing files:
-
-```sh
-sudo teams-quiet-hours install --dry-run
-sudo teams-quiet-hours block --dry-run
-```
-
-## Browser Targets
-
-Google Chrome is the default:
-
-```sh
-sudo teams-quiet-hours install --browser chrome
-```
-
-Chromium paths are also supported:
-
-```sh
-sudo teams-quiet-hours install --browser chromium
-```
-
-This manages both common Chromium policy directories:
-
-```text
-/etc/chromium/policies/managed/
-/etc/chromium-browser/policies/managed/
-```
-
-To manage Chrome and Chromium together:
-
-```sh
-sudo teams-quiet-hours install --browser all
-```
-
-## Custom Hours
-
-Use 24-hour `HH:MM` times:
-
-```sh
-sudo teams-quiet-hours install --start 08:30 --end 18:00 --timezone Africa/Lagos
-```
-
-The timezone is written as `CRON_TZ` in `/etc/cron.d/teams-quiet-hours`. If omitted, cron uses the system timezone.
-
-## Policy File
-
-When blocked, Chrome receives:
-
-```json
-{
-  "NotificationsBlockedForUrls": [
-    "https://teams.microsoft.com/*",
-    "https://*.teams.microsoft.com/*"
-  ]
-}
-```
-
-When allowed, `teams-quiet-hours` removes only:
-
-```text
-teams-quiet-hours.json
-```
-
-It never edits unrelated Chrome policy files.
-
-## Uninstall
-
-```sh
+teams-quiet-hours doctor
+sudo teams-quiet-hours pause
+sudo teams-quiet-hours resume
+sudo teams-quiet-hours allow-now
+sudo teams-quiet-hours block-now
 sudo teams-quiet-hours uninstall
 ```
 
-This removes the managed policy file, cron file, installed CLI, and config file created by the tool.
+What they mean:
+
+- `status`: show current configuration and enforcement state.
+- `doctor`: friendly health check for permissions, browser policy, scheduler, Teams process, and network block state.
+- `pause`: temporarily allow Teams and pause future enforcement.
+- `resume`: resume quiet-hours enforcement.
+- `allow-now`: immediately restore normal Teams behavior.
+- `block-now`: immediately apply quiet-hours behavior.
+- `uninstall`: remove the scheduler, config, installed binary, browser policies, and network rules created by this tool.
+
+Advanced command:
+
+```sh
+sudo teams-quiet-hours enforce
+```
+
+`enforce` checks the current time and applies allow/block. It is safe for schedulers to run repeatedly.
+
+## What Gets Installed
+
+Binary:
+
+- Linux/macOS: `/usr/local/bin/teams-quiet-hours`
+- Windows: `%ProgramFiles%\teams-quiet-hours\teams-quiet-hours.exe`
+
+Config:
+
+- Linux: `/etc/teams-quiet-hours/config.json`
+- macOS: `/Library/Application Support/teams-quiet-hours/config.json`
+- Windows: `%ProgramData%\teams-quiet-hours\config.json`
+
+Scheduler:
+
+- Linux: systemd timers when available, cron fallback
+- macOS: LaunchDaemons
+- Windows: Task Scheduler tasks under `\teams-quiet-hours\`
+
+Browser policies:
+
+- Chrome/Chromium/Edge notification policy entries for Teams URLs only
+- The tool never overwrites unrelated browser policies
+
+Optional network blocking:
+
+- Linux/macOS: a clearly marked `teams-quiet-hours` section in the hosts file
+- Windows: only the firewall rule named `teams-quiet-hours Teams block`
+
+## Release Assets
+
+Each GitHub Release includes:
+
+- `teams-quiet-hours-linux-amd64`
+- `teams-quiet-hours-linux-arm64`
+- `teams-quiet-hours-darwin-amd64`
+- `teams-quiet-hours-darwin-arm64`
+- `teams-quiet-hours-windows-amd64.exe`
+- `teams-quiet-hours_<version>_amd64.deb`
+- `teams-quiet-hours_<version>_arm64.deb`
+- `install.sh`
+- `install.ps1`
+- `checksums.txt`
+
+Ubuntu/Debian users can also download a `.deb` from Releases:
+
+```sh
+sudo dpkg -i teams-quiet-hours_<version>_amd64.deb
+sudo teams-quiet-hours setup
+```
+
+## Security And Transparency
+
+The tool is intentionally explicit about system changes:
+
+- It manages only Teams notification URL policies.
+- It records/removes only Windows registry values it creates.
+- It creates/removes only scheduler entries named for `teams-quiet-hours`.
+- It creates/removes only the firewall/hosts entries named for `teams-quiet-hours`.
+- It always supports rollback with `teams-quiet-hours uninstall`.
+
+Use `--dry-run` to preview changes:
+
+```sh
+sudo teams-quiet-hours block-now --mode nuclear --block-network --dry-run
+```
+
+Use `--verbose` with doctor for technical details:
+
+```sh
+teams-quiet-hours doctor --verbose
+```
 
 ## Troubleshooting
+
+Chrome/Chromium:
 
 1. Open `chrome://policy`.
 2. Click `Reload policies`.
 3. Confirm `NotificationsBlockedForUrls` appears when blocked.
-4. Restart Chrome if policies do not update immediately.
-5. Run `teams-quiet-hours status` to confirm which policy files exist.
+4. Restart the browser if needed.
 
-If `block` fails with a JSON validation error, install either `jq` or `python3`.
+Microsoft Edge:
+
+1. Open `edge://policy`.
+2. Click `Reload policies`.
+3. Confirm `NotificationsBlockedForUrls` appears when blocked.
+
+If desktop calls still ring in soft mode, use hard mode. Browser notification policies do not reliably control desktop app calls.
+
+If nuclear mode affects more than intended:
+
+```sh
+sudo teams-quiet-hours allow-now
+sudo teams-quiet-hours uninstall
+```
+
+## Packaging Roadmap
+
+Available now:
+
+- Prebuilt Linux/macOS/Windows binaries
+- GitHub Releases with checksums
+- `install.sh` for Linux/macOS
+- `install.ps1` for Windows
+- `.deb` packages for Ubuntu/Debian
+
+Planned later:
+
+- `.rpm` package for Fedora/RHEL
+- Optional APT repository
+- Homebrew tap
+- macOS `.pkg` installer
+- Windows MSI or winget manifest
 
 ## Development
 
-Run the validation script:
-
 ```sh
-./tests/run.sh
+make fmt
+make test
+make lint
+make cross-build
+make package-deb
 ```
 
-Run ShellCheck if installed:
-
-```sh
-shellcheck bin/teams-quiet-hours tests/run.sh
-```
-
-The tests redirect system paths into a temporary directory and do not require root.
-
-## Packaging
-
-`.deb` packaging is intentionally left for a later version. The current project is a single Bash script plus cron/config files, so it can be packaged with `fpm`, `dpkg-deb`, or a native Debian packaging directory later.
+The project uses only the Go standard library.
 
 ## License
 

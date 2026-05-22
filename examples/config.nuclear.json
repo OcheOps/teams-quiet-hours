@@ -1,0 +1,13 @@
+{
+  "mode": "nuclear",
+  "browser": "all",
+  "start": "09:00",
+  "end": "17:00",
+  "timezone": "Africa/Lagos",
+  "weekdays": "mon-fri",
+  "launch_on_allow": false,
+  "close_browser_tabs": false,
+  "block_network": true,
+  "enforce_every_mins": 5,
+  "paused": false
+}

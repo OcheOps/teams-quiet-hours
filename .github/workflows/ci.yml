@@ -5,17 +5,45 @@ on:
   pull_request:
 
 jobs:
-  shell:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22.x"
+
+      - name: Test
+        run: go test ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Build
+        run: go build -buildvcs=false ./cmd/teams-quiet-hours
+
+  release-binaries:
     runs-on: ubuntu-latest
     steps:
       - name: Check out
         uses: actions/checkout@v4
 
-      - name: Install ShellCheck
-        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22.x"
 
-      - name: ShellCheck
-        run: shellcheck bin/teams-quiet-hours tests/run.sh
+      - name: Build release binaries
+        run: ./scripts/build.sh
 
-      - name: Tests
-        run: ./tests/run.sh
+      - name: Upload binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: teams-quiet-hours-binaries
+          path: dist/*
