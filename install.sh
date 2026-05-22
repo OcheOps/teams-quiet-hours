@@ -52,7 +52,7 @@ trap 'rm -rf "$tmpdir"' EXIT
 
 base_url="https://github.com/${REPO}/releases/latest/download"
 echo "Downloading ${asset} from GitHub Releases..."
-download "${base_url}/${asset}" "${tmpdir}/${BIN_NAME}"
+download "${base_url}/${asset}" "${tmpdir}/${asset}"
 download "${base_url}/checksums.txt" "${tmpdir}/checksums.txt"
 
 if command -v sha256sum >/dev/null 2>&1; then
@@ -63,15 +63,15 @@ else
   echo "Warning: could not verify checksum because sha256sum/shasum is unavailable." >&2
 fi
 
-chmod +x "${tmpdir}/${BIN_NAME}"
+chmod +x "${tmpdir}/${asset}"
 
 echo "Installing to ${INSTALL_DIR}/${BIN_NAME}..."
 if [ "$(id -u)" -eq 0 ]; then
   mkdir -p "$INSTALL_DIR"
-  cp "${tmpdir}/${BIN_NAME}" "${INSTALL_DIR}/${BIN_NAME}"
+  cp "${tmpdir}/${asset}" "${INSTALL_DIR}/${BIN_NAME}"
 else
   sudo mkdir -p "$INSTALL_DIR"
-  sudo cp "${tmpdir}/${BIN_NAME}" "${INSTALL_DIR}/${BIN_NAME}"
+  sudo cp "${tmpdir}/${asset}" "${INSTALL_DIR}/${BIN_NAME}"
 fi
 
 echo
@@ -84,4 +84,3 @@ fi
 
 echo
 echo "Installed. Run 'teams-quiet-hours doctor' to check the setup."
-
